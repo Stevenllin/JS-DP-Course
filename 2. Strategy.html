@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      var $form = getForm();
+      $form.submit(onSubmit);
+
+      /** 上傳表單 */
+      function onSubmit() {
+        /** 這裡的 this 是表單 form */
+        var form = this;
+        var errorMsg = myFormValidator(form);
+
+        if (errorMsg) {
+          // alert(errorMsg);
+          return false;
+        }
+      }
+
+      /** 製作表單畫面 */
+      function getForm() {
+        var $form = $('<form>').appendTo('body').attr('method', 'post');
+        createLine('使用者名稱:', 'userName').appendTo($form);
+        createLine('密碼:', 'password').appendTo($form);
+        createLine('手機號碼:', 'phoneNumber').appendTo($form);
+        createButton().appendTo($form);
+        return $form;
+
+        function createButton() {
+          return $('<button>').text('submit');
+        }
+
+        function createLine(text, name) {
+          var $label = $('<span>').text(text);
+          var $input = $('<input>').attr('name', name);
+          return $('<div>').append($label).append($input);
+        }
+      }
+
+      /** 檢核規則 */
+      var strategies = {
+        inNotEmpty: function(val, errorMsg) {
+          if (val === '') {
+            return errorMsg;
+          }
+        },
+        minLength: function(val, length, errorMsg) {
+          if (val.length < length) {
+            return errorMsg;
+          }
+        },
+        isMobileNumber: function(val, errorMsg) {
+          if (!/^[09]{2}[0-9]{8}$/.test(val)) {
+            return errorMsg;
+          }
+        }
+      };
+
+      /** 檢核表單 */
+      function myFormValidator(form) {
+        var validator = new Validator();
+        /** 加入檢核規則 */
+        validator.add(form.userName.value, [{
+          strategy: 'inNotEmpty',
+          errorMsg: '使用者名稱不為空'
+        }, {
+          strategy: 'minLength:6',
+          errorMsg: '使用者名稱位數不得少於6'
+        }]);
+        validator.add(form.password.value, [{
+          strategy: 'minLength:8',
+          errorMsg: '密碼位數不得少於8'
+        }]);
+        validator.add(form.phoneNumber.value, [{
+          strategy: 'isMobileNumber',
+          errorMsg: '手機號碼錯誤'
+        }]);
+        /** 開始檢核規則 */
+        var errorMsg = validator.start();
+        return errorMsg;
+      }
+
+      var Validator = function() {
+        this.cache = [];
+      };
+
+      Validator.prototype.add = function(item, rules) {
+        /** this 是 Validator */
+        var self = this;
+        rules.forEach(function(rule) {
+          var strategySet = rule.strategy.split(':');
+          /** 當呼叫 add 僅先暫存 function，當呼叫 start 才會執行這段 */
+          self.cache.push(function() {
+            /** 暫存上方的 strategySet 值 (因閉包的關係) */
+            /** 規則的 Name */
+            var strategyName = strategySet.shift();
+            /** 將 value 放入第一個位置 */
+            strategySet.unshift(item);
+            /** 規則的錯誤訊息 */
+            strategySet.push(rule.errorMsg);
+            /** this 是 Window */
+            /** 把 self(Validator) 傳入 strategies 對應陣列的 function */
+            return strategies[strategyName].apply(self, strategySet);
+          });
+        });
+      };
+
+      Validator.prototype.start = function() {
+        var errorMsg;
+        this.cache.some(function(validatorFunc) {
+          errorMsg = validatorFunc();
+          /** 若檢查到一個錯誤即回傳，不檢核下一個規則 */
+          if (errorMsg) {
+            return true;
+          }
+        });
+        return errorMsg;
+      };
+    </script>
+  </body>
+</html>
