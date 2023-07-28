@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      var $button = (function() {
+        return $('<button>').text('登入').appendTo('body');
+      })();
+
+      /** 僅宣告並不會馬上執行 */
+      function getSingle(fn) {
+        var singleItem;
+        /** 將具有 length 属性的物件轉成陣列 */
+        /** [].slice 回傳一個 function object */
+        var argTmp = [].slice.call(arguments);
+
+        /** 僅宣告並馬上執行 */
+        var newArg = (function() {
+          argTmp.shift();
+          return argTmp;
+        })();
+
+        return function() {
+          /** apply 是以陣列 @newArg 作為傳入參數 */
+          return singleItem || (singleItem = fn.apply(this, newArg));
+        }
+      }
+
+      function createLayer(text) {
+        var $layer = $('<div>').text(text).appendTo('body');
+        $layer.hide();
+        return $layer;
+      }
+
+      var createSingleLoginLayer = getSingle(createLayer, '我是登入畫面');
+
+      function showLayer() {
+        createSingleLoginLayer().show();
+      }
+      $button.click(showLayer);
+    </script>
+  </body>
+</html>
