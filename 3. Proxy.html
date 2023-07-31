@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      /** 保持單一功能 */
+      var $imgNode = (function() {
+        var $imgNode = $('<img>').appendTo('body');
+        return {
+          setSrc: function(src) {
+            $imgNode.attr('src', src);
+          }
+        }
+      })();
+
+      /** 預載代理 */
+      var proxyImage = (function() {
+        var img = new Image;
+        img.onload = function() {
+          /** 設定目標圖片 */
+          $imgNode.setSrc(this.src);
+        };
+        return {
+          setSrc: function(src) {
+            var loadingPage = './T.jpg';
+            $imgNode.setSrc(loadingPage);
+            img.src = src;
+          }
+        }
+      })();
+      proxyImage.setSrc('./S.jpg');
+
+      (function() {
+        /** 建立個別的 input element */
+        for (let i = 1; i < 10; i++) {
+          $('<input>').attr('type', 'checkbox').attr('id', i).appendTo('body').click(onClick);
+        }
+
+        function onClick(e) {
+          if (this.checked === true) {
+            proxySync(this.id);
+          }
+        }
+      })();
+
+      var syncWithServer = function(id) {
+        console.log('假裝往server送訊息,id:' + id);
+      };
+
+      var proxySync = (function() {
+        var cache = []; //存放需要同步的ID;
+        var timer;
+
+        return function(id) {
+          cache.push(id);
+
+          if (timer) {
+            return
+          }
+          /** 第一次執行時創建 timer */
+          timer = setTimeout(function() {
+            syncWithServer(cache.join(','));
+            clearTimeout(timer);
+            /** 清掉 timer 使下一次可再執行此 webAPI */
+            timer = null;
+            cache.length = 0;
+          }, 5000);
+        }
+      })();
+
+      /** 來源： https://ithelp.ithome.com.tw/articles/10202830 */
+    </script>
+  </body>
+</html>
