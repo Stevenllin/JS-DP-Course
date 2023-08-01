@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      /** Example 比較陣列是否相同 */
+      /** 內部迭代器 - 內部規則已先被規定，使用上就較難有變化 */
+      var each = function (ary, callback, _this) {
+        for (var i = 0; i < ary.length; i++) {
+          callback.call(_this, i, ary[i]);
+        }
+      };
+      var compareV1 = function (ary1, ary2) {
+        if (ary1.length !== ary2.length) {
+          throw new Error('不相等');
+        }
+        each(ary1, function (i, n) {
+          if (n !== ary2[i]) {
+            throw new Error('不相等');
+          }
+        });
+        console.log('相等');
+      };
+      compareV1([1, 2, 3], [1, 2, 3]);
+
+      /** 外部迭代器 - 增加呼叫的複雜度，使用相對靈活性 */
+      /** Iterator 負責取得物件與狀態 */
+      var Iterator = function(obj) {
+        var current = 0;
+        var next = function() { current++; };
+        var isDone = function() { return current >= obj.length };
+        var getCurrentItem = function() { return obj[current] };
+
+        return {
+          next: next,
+          isDone: isDone,
+          getCurrentItem: getCurrentItem
+        }
+      };
+      var compareV2 = function(iterator1, iterator2) {
+        while (!iterator1.isDone() && !iterator2.isDone()) {
+          if (iterator1.getCurrentItem() !== iterator2.getCurrentItem()) {
+            throw new Error('不相等');
+          }
+          iterator1.next();
+          iterator2.next();
+        }
+        console.log('相等');
+      };
+      var a = [1, 2, 3];
+      var b = [1, 2, 4];
+      compareV2(Iterator(a), Iterator(b));
+
+      /** Example 在不同瀏覽器環境中選用不同的上傳檔案方式 */
+      /** 違反開放-封閉原則 */
+      var getUploadObj = function() {
+        try {
+          return new IEUploadObj();
+        } catch (e) {
+          if (supportFlash()) {
+            /** Flash 上傳 */
+            return flashUploadObj();
+          } else {
+            /** 表單上傳 */
+            return formUploadObj();
+          }
+        }
+      };
+
+      /** 改善 */
+      var iteratorUploadObj = function() {
+        for (var i = 0, fn; fn = arguments[i++];) {
+          var uploadObj = fn();
+          if (uploadObj !== false) {
+            return uploadObj;
+          }
+        }
+      };
+      /** A方法實作內容 */
+      var getUploadObjA = function() {};
+
+      /** B方法實作內容 */
+      var getUploadObjB = function() {};
+
+      var uploadObj = iteratorUploadObj(getUploadObjA, getUploadObjB);
+
+      /** 來源：https://ithelp.ithome.com.tw/articles/10203121 */
+    </script>
+  </body>
+</html>
