@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      /** Example 1 */
+      var saleOffices = {};
+      /** 存放訂閱者資訊 */
+      saleOffices.clientList = [];
+
+      /** 訂閱者提供通知方法給予陣列 */
+      saleOffices.listen = function (fn) {
+        this.clientList.push(fn);
+      };
+
+      /** 將陣列存放函數拿出來執行 */
+      saleOffices.trigger = function () {
+        for (var i = 0, fn; fn = this.clientList[i++];) {
+          fn.apply(this, arguments);
+        }
+      };
+
+      saleOffices.listen(function (name, price) {
+        console.log('小胖的商品到囉:', name, price+'元');
+      });
+      saleOffices.listen(function (name, price) {
+        console.log('帥氣夥伴的商品到囉:', name, price+'元');
+      });
+
+      saleOffices.trigger('減肥套餐', 100000);
+      /** 簡單的發佈/訂閱模式，但上面這種寫法無法區分出來訂不同的商品 */
+
+      /** Example 2 */
+      var saleOffices = {};
+      saleOffices.clientList = {};
+
+      saleOffices.listen = function (key, fn) {
+        /** 創建 key 對應的函數陣列 */
+        if (!this.clientList[key]) {
+          this.clientList[key] = [];
+        }
+        this.clientList[key].push(fn);
+      };
+
+      saleOffices.trigger = function () {
+        var key = Array.prototype.shift.call(arguments);
+        /** 移除 arguements 第一個參數 */
+        var fnPool = this.clientList[key];
+
+        if (!fnPool || fnPool.length === 0) {
+          return false;
+        }
+        for (var i = 0, fn; fn = fnPool[i++];) {
+          fn.apply(this, arguments);
+        }
+      };
+
+      saleOffices.listen('A', function (name, price) {
+        console.log('小胖訂的A貨到了:', name, price);
+      });
+      saleOffices.listen('B', function (name, price) {
+        console.log('小胖訂的B貨到了:', name, price);
+      });
+      saleOffices.listen('A', function (name, price) {
+        console.log('夥伴訂的A貨到了:', name, price);
+      });
+      saleOffices.trigger('A', 'BBB', 100000);
+
+      /** Example 3 */
+      var event = {
+        clientList: {},
+        listen: function (key, fn) {
+          if (!this.clientList[key]) {
+            this.clientList[key] = [];
+          }
+          this.clientList[key].push(fn);
+        },
+        trigger: function () {
+            var key = Array.prototype.shift.call(arguments);
+            var fnPool = this.clientList[key];
+
+            if (!fnPool || fnPool.length === 0) {
+              return false;
+            }
+            for (var i = 0, fn; fn = fnPool[i++];) {
+              fn.apply(this, arguments);
+            }
+        },
+        remove : function (key, removeFn) {
+          var fnPool = this.clientList[key];
+
+          if (!fnPool || fnPool.length === 0) {
+            return false;
+          }
+
+          if (!removeFn) {
+            fnPool && (fnPool.length = 0);
+          } else {
+            for (var i = 0, fn; fn = fnPool[i]; i++) {
+              if (fn === removeFn) {
+                fnPool.splice(i, 1);
+              }
+            }
+          }
+        }
+      };
+      /** 每個物件擁有都可以有上述方法 */
+      var installEvent = function (obj) {
+        for (var i in event) {
+          obj[i] = event[i];
+        }
+      };
+      var saleOffices = {};
+      installEvent(saleOffices);
+      saleOffices.listen('X', function (name, price) {
+        console.log('A:', name, price);
+      });
+      saleOffices.trigger('X', 'X商品', 100000);
+      /** 來源：https://ithelp.ithome.com.tw/articles/10203484 */
+    </script>
+  </body>
+</html>
