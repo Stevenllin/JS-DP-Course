@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      //做一個全域的物件
+      var Event = (function () {
+        var clientList = {},
+          listen,
+          trigger,
+          remove;
+          
+        //實際執行方法(內容都跟上述的範例一樣)
+        listen = function (key, fn) {
+          if (!clientList[key]) {
+            clientList[key] = [];
+          }
+          clientList[key].push(fn);
+        };
+        trigger = function () {
+          var key = Array.prototype.shift.call(arguments);
+          var fnPool = clientList[key];
+          if (!fnPool || fnPool.length === 0) {
+            return false;
+          }
+          for (var i = 0, fn; fn = fnPool[i++];) {
+            fn.apply(this, arguments);
+          }
+        };
+        remove = function (key, removeFn) {
+          var fnPool = this.clientList[key];
+          if (!fnPool || fnPool.length === 0) {
+            return false;
+          }
+          if (!removeFn) {
+            fnPool && (fnPool.length = 0);
+          } else {
+            for (var i = 0, fn; fn = fnPool[i]; i++) {
+              if (fn === removeFn) {
+                fnPool.splice(i, 1);
+              }
+            }
+          }
+        };
+        //回傳給外面呼叫
+        return {
+          listen: listen,
+          trigger: trigger,
+          remove: remove
+        }
+      })();
+      (function () {
+          createButtonA();
+          createDivB();
+
+          function createButtonA() {
+            var count = 0;
+            $('<button>').text('A').appendTo('body').click(function () {
+              Event.trigger('add', ++count);
+            });
+          }
+
+          function createDivB() {
+            var b = $('<div>').text('').appendTo('body');
+            Event.listen('add', function (count) {
+              b.text(count);
+            });
+          }
+      })();
+      /** 來源：https://ithelp.ithome.com.tw/articles/10203484 */
+    </script>
+  </body>
+</html>
