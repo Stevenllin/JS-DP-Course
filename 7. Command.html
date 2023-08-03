@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <body>
+    <script type="text/javascript">
+      /** 命令模式需要把運算區塊包裝起來四處傳遞 */
+      var $btn1, $btn2, $btn3;
+      (function () {
+        $btn1 = createBtn('btn1');
+        $btn2 = createBtn('btn2');
+        $btn3 = createBtn('btn3');
+
+        function createBtn(id) {
+          return $('<button>').attr('id', id).text(id).appendTo('body');
+        }
+      })();
+
+      var bindClick = function ($btn, callback) {
+        $btn.click(callback);
+      }
+
+      var MenuBar = {
+        refresh: function () {
+          console.log('MenuBar Refresh');
+        }
+      };
+
+      var SubMenu = {
+        add: function () {
+          console.log('submenu add');
+        },
+        del: function () {
+          console.log('submenu del');
+        }
+      };
+
+      bindClick($btn1, MenuBar.refresh);
+      bindClick($btn2, SubMenu.add);
+      bindClick($btn3, SubMenu.del);
+
+      var RefreshMenuBarCommand = function (receiver) {
+        return {
+          execute: function () {
+            receiver.refresh();
+          }
+        }
+      };
+
+      var setCommand = function ($btn, command) {
+        $btn.click(function () {
+          command.execute();
+        });
+      }
+
+      var refreshMenuBarCommand = new RefreshMenuBarCommand(MenuBar);
+      setCommand($btn1, refreshMenuBarCommand);
+
+      /** 各別 Command */
+      var closeDoorCommand = {
+        execute: function () {
+          console.log('關門');
+        }
+      };
+
+      var openPcCommand = {
+        execute: function () {
+          console.log('開電腦');
+        }
+      };
+
+      var openAcCommand = {
+        execute: function () {
+          console.log('開冷氣');
+        }
+      };
+
+      /** 巨集的 Command */
+      var MarcoCommand = function () {
+        return {
+          commandList: [],
+          add: function (command) {
+            this.commandList.push(command);
+          },
+          execute: function () {
+            this.commandList.forEach(function (command) {
+              command.execute();
+            });
+          }
+        }
+      };
+      var marcoCommand = MarcoCommand();
+      /** 將 command 加入至巨集的 Command */
+      marcoCommand.add(closeDoorCommand);
+      marcoCommand.add(openPcCommand);
+      marcoCommand.add(openAcCommand);
+      /** 執行所有的 command */
+      marcoCommand.execute();
+      /** 來源： */
+    </script>
+  </body>
+</html>
