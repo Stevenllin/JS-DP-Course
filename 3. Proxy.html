@@ -3,7 +3,34 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <body>
     <script type="text/javascript">
-      /** 保持單一功能 */
+      /** Proxy Pattern 為物件提供 a surrogate or placeholder 並控制另一個物件 */
+      /** 
+       * 不直接操作目標物件，而是會建立一個代理（proxy）負責對目標物件的操作。
+       * 這麼做的好處除了可以避免 code duplication 以外，更大的好處是我們可以在 proxy 做一些額外的操作，卻不用怕更改到目標物件。
+       * 
+      */
+
+      /** Example */
+      /** 原寫法 - 違反單一原則*/
+      var $imgNode = (function() {
+        var $imgNode = $('<img>').appendTo('body');
+        var img = new Image;
+        img.onload = function() {
+          $imgNode.attr('src', this.src);
+        };
+        return {
+          setSrc: function(src) {
+            var loadingPage = 'loading.jpg';
+            $imgNode.attr('src', loadingPage);
+            img.src = src;
+          }
+        }
+      })();
+      $imgNode.setSrc('https://upload.cc/i1/2018/10/18/uCewa6.png');
+
+      /** 透過 proxyImage 物件控制 imgNode */
+      /** 保持單一功能 - 將預載圖片與設定圖片 action 拆分 */
+
       var $imgNode = (function() {
         var $imgNode = $('<img>').appendTo('body');
         return {
@@ -13,25 +40,33 @@
         }
       })();
 
-      /** 預載代理 */
+      /** 建立預載代理 */
       var proxyImage = (function() {
         var img = new Image;
+
+        /** 當 Loading 完成，設定目標圖片 */
         img.onload = function() {
-          /** 設定目標圖片 */
           $imgNode.setSrc(this.src);
         };
         return {
           setSrc: function(src) {
+            /** 設定 LoandingPage */
             var loadingPage = './T.jpg';
             $imgNode.setSrc(loadingPage);
+
+            /** 設定目標圖片 */
             img.src = src;
           }
         }
       })();
+
       proxyImage.setSrc('./S.jpg');
 
+      /** Example */
+      /** 透過 proxySync 控制 syncWithServer 呼叫時機 */
+
+      /** 建立個別的 input element 與其方法 */
       (function() {
-        /** 建立個別的 input element */
         for (let i = 1; i < 10; i++) {
           $('<input>').attr('type', 'checkbox').attr('id', i).appendTo('body').click(onClick);
         }
@@ -48,7 +83,8 @@
       };
 
       var proxySync = (function() {
-        var cache = []; //存放需要同步的ID;
+        /** 存放需要同步的 ID */
+        var cache = []
         var timer;
 
         return function(id) {
@@ -57,18 +93,20 @@
           if (timer) {
             return
           }
-          /** 第一次執行時創建 timer */
+          /** 第一次執行時創建 timer，五秒後執行內部動作 */
           timer = setTimeout(function() {
             syncWithServer(cache.join(','));
             clearTimeout(timer);
             /** 清掉 timer 使下一次可再執行此 webAPI */
             timer = null;
+            /** 設定 cache 為空陣列 */
             cache.length = 0;
           }, 5000);
         }
       })();
 
       /** 來源： https://ithelp.ithome.com.tw/articles/10202830 */
+      /** 來源： https://oldmo860617.medium.com/proxy-pattern-5f89595dcd30 */
     </script>
   </body>
 </html>
