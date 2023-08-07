@@ -3,11 +3,41 @@
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <body>
     <script type="text/javascript">
+      /** Singleton 的定義是「保證一個類別僅有一個實例，並提供一個存取它的全域存取點。不同檔案匯入時也都拿到的是相同的實例。*/
+
+      /** 
+       * Greed Singleton 重複使用這個物件，不會每次都有一個新的物件產生，原本的物件可以重複使用。
+       * 登入頁面不會因為多次點擊登入按鈕而重複的被產生，但是這樣寫有個缺點：還沒點擊登入按鈕登入畫面就被建立好了。
+       */
+      
+      /** 產生一個登入按鈕 */
       var $button = (function() {
         return $('<button>').text('登入').appendTo('body');
       })();
 
-      /** 僅宣告並不會馬上執行 */
+      /** 產生一個登入畫面 */
+      var $loginLayer = (function() {
+        var $layer = $('<div>').text('我是登入畫面').appendTo('body');
+        $layer.hide();
+        return $layer;
+      })();
+
+      /** 綁定按鈕事件 */
+      $button.click(showLayer);
+
+      /** 顯示登入畫面 */
+      function showLayer() {
+        $loginLayer.show();
+      }
+
+      /** 
+       * Lazy Singletons 指的是不會在一開始就把 instance 建立好，而是有用到時才建立。
+       */
+      var $button = (function() {
+        return $('<button>').text('登入').appendTo('body');
+      })();
+
+      /** 僅宣告並不會馬上執行，透過閉包實現 Singleton */
       function getSingle(fn) {
         var singleItem;
         /** 將具有 length 属性的物件轉成陣列 */
@@ -19,8 +49,9 @@
           argTmp.shift();
           return argTmp;
         })();
-
+        
         return function() {
+          /** 首次執行為 undefined */
           /** apply 是以陣列 @newArg 作為傳入參數 */
           return singleItem || (singleItem = fn.apply(this, newArg));
         }
@@ -37,7 +68,10 @@
       function showLayer() {
         createSingleLoginLayer().show();
       }
+      /** 按下 button 才開始製作頁面，避免浪費資源 */
       $button.click(showLayer);
+
+      /** 來源：https://ithelp.ithome.com.tw/articles/10202016 */
     </script>
   </body>
 </html>
