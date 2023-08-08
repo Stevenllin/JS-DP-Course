@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <body>
     <script type="text/javascript">
+      /** 把演算法一個個封裝起來，並且使它們可以相互替換 */
+      
       var $form = getForm();
       $form.submit(onSubmit);
 
@@ -117,6 +119,14 @@
         });
         return errorMsg;
       };
+
+      /** 優點
+       * 1.避免過多重複代碼，若類似的表單要用到這三個規則的直接套用 myFormValidator 就好。
+       * 2.組合彈性高，若有不同規則組合的表單也可以像製作 myFormValidator 一樣做一個新的檢查規則。
+       * 3.易於擴展，若有新的演算法的話只要新增在 strategies 裡面即可。
+      */
+
+      /** 來源：https://ithelp.ithome.com.tw/articles/10202419 */
     </script>
   </body>
 </html>
